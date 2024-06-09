@@ -206,12 +206,12 @@ Resources:
               command: !Sub |
                 mysqladmin -u root password 'TestDBRootPassword'
               test: !Sub |
-                $(mysql ${DBName} -u root --password='TestDBRootPassword' >/dev/null 2>&1 </dev/null); (( $? != 0 ))
+                $(mysql $TestWordPressDB -u root --password='TestDBRootPassword' >/dev/null 2>&1 </dev/null); (( $? != 0 ))
             02_create_database:
               command: !Sub |  
                 mysql -u root --password='TestDBRootPassword' < /tmp/setup.mysql
               test: !Sub |
-                $(mysql ${DBName} -u root --password='TestDBRootPassword' >/dev/null 2>&1 </dev/null); (( $? !=0))
+                $(mysql $TestWordPressDB -u root --password='TestDBRootPassword' >/dev/null 2>&1 </dev/null); (( $? !=0))
             03_configure_wordpress:
               command: /tmp/create-wp-config
               cwd: /var/www/html/wordpress
@@ -248,17 +248,17 @@ Resources:
               content: !Sub |
                 #!/bin/bash -xe
                 cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
-                sed -i "s/'database_name_here'/'${DBName}'/g" wp-config.php
-                sed -i "s/'username_here'/'${DBUser}'/g" wp-config.php
-                sed -i "s/'password_here'/'${DBPassword}'/g" wp-config.php                                    
+                sed -i "s/'database_name_here'/'$TestWordPressDB'/g" wp-config.php
+                sed -i "s/'username_here'/'$TestDBuser'/g" wp-config.php
+                sed -i "s/'password_here'/'$TestDBRootPassword'/g" wp-config.php                                    
               group: root
               mode: '000500'
               owner: root
             /tmp/setup.mysql:
               content: !Sub |
-                CREATE DATABASE ${DBName};
-                CREATE USER '${DBUser}'@'localhost' IDENTIFIED BY '${DBPassword}';
-                GRANT ALL ON ${DBName}.* TO '${DBUser}'@'localhost'; 
+                CREATE DATABASE $TestWordPressDB;
+                CREATE USER '$TestDBuser'@'localhost' IDENTIFIED BY '$TestDBRootPassword';
+                GRANT ALL ON $TestDBuser.* TO '$TestDBuser'@'localhost'; 
                 FLUSH PRIVILEGES;
               group: root
               mode: '000400'
